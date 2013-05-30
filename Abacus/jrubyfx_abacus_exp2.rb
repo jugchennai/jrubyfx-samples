@@ -26,7 +26,7 @@ class AbacusExp1 < JRubyFX::Application
 
 	def start(stage)
 
-		with(stage,title:"JRubyFX Abacus Experiment 1", width:@@SCENE_WIDTH + @@TRANS_DIST + @@RADIUS, height:@@SCENE_HEIGHT) do
+		with(stage,title:"JRubyFX Abacus Experiment 2", width:@@SCENE_WIDTH + @@TRANS_DIST + @@RADIUS, height:@@SCENE_HEIGHT) do
 
 			p = Pane.new
 
