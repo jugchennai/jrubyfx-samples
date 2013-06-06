@@ -24,15 +24,9 @@ class AbacusExp3 < JRubyFX::Application
 
 				timeline(cycle_count: 1, auto_reverse: false) do
 
-					if c.translateX == @@TRANS_DIST
+					a = c.translateX == @@TRANS_DIST ? @@TRANS_DIST : 0
 
-						animate translate_x, 0.sec => 250.ms, @@TRANS_DIST => 0 
-
-					else
-
-						animate translate_x, 0.sec => 250.ms, 0 => @@TRANS_DIST 
-
-					end					
+				    animate translate_x, 0.sec => 250.ms, a => a == 0 ? @@TRANS_DIST : 0				
 
 				end.play				
 
