@@ -1,122 +1,69 @@
+#!/usr/bin/env jruby
+# Original version is here: https://github.com/Dierk/learnJavaFx/blob/master/src/solution/Abacus_6_Styled.java
+# Modified by Prasanth <@prashanth702> and Shakeer
+
 require "jrubyfx"
 
 class AbacusExp6 < JRubyFX::Application
 
-	@@ROW_COUNT = 10
-	@@COL_COUNT = 10
-	@@RADIUS = 20
-	@@DIAMETER = 2 * @@RADIUS
-	@@SCENE_WIDTH = @@COL_COUNT * @@DIAMETER 
-	@@SCENE_HEIGHT = @@ROW_COUNT * @@DIAMETER
-	@@TRANS_DIST = 100
-	@@PADDING = 20
-	@@OFFSET = @@PADDING + @@RADIUS
-	@@PADDED_WIDTH = @@SCENE_WIDTH + 2 * @@PADDING
-	@@PADDED_HEIGHT = @@SCENE_HEIGHT + 2 * @@PADDING
-	@@RECT_HEIGHT = 6
+ @@ROW_COUNT = 10
+ @@COL_COUNT = 10
+ @@RADIUS = 20
+ @@DIAMETER = 2 * @@RADIUS
+ @@TRANS_DIST = 8 * @@DIAMETER
+ @@PADDING = 20
+ @@OFFSET = @@PADDING + @@RADIUS	
+ @@SCENE_WIDTH = @@COL_COUNT * @@DIAMETER + @@TRANS_DIST 
+ @@SCENE_HEIGHT = @@ROW_COUNT * @@DIAMETER	
+ @@RECT_HEIGHT = 6	
 
-	def create_rect(row,column)
+  def start(stage)
+    with(stage,title:"JRubyFX - Abacus",width:@@SCENE_WIDTH + 3 * @@PADDING,height:@@SCENE_HEIGHT + 4 * @@PADDING ) do
+      l = layout_scene do					
+        pane do
 
-		r = rectangle(x:column,y:row,width:@@SCENE_WIDTH+@@TRANS_DIST,height:@@RECT_HEIGHT) do
+          @@ROW_COUNT.times do |x|						
+            rectangle(x:@@PADDING,y:@@OFFSET + (x * @@DIAMETER)-(@@RECT_HEIGHT/2),width:@@SCENE_WIDTH,height:@@RECT_HEIGHT) do
+              get_style_class.add "rail" 
+            end
+            last = nil
 
-			get_style_class.add "rail"
+            @@COL_COUNT.times do |y|
+              c = circle(radius:@@RADIUS-1, centerX:@@OFFSET + (y * @@DIAMETER), centerY:@@OFFSET + (x * @@DIAMETER)) do
+                get_style_class.add y < @@COL_COUNT / 2 ? "left" : "right"
+                set_on_mouse_clicked do 
+                  translate_x = translateXProperty
+                  timeline(cycle_count: 1, auto_reverse: false) do
+                    animate translate_x, 0.sec => 250.ms, c.translateX == @@TRANS_DIST ? @@TRANS_DIST : 0 => c.translateX == 0 ? @@TRANS_DIST : 0
+                  end.play	
+                end
+              end
 
-		end
+              text( c.getCenterX-3 , c.getCenterY+4,((@@COL_COUNT - y) % @@COL_COUNT).to_s) do
+                translateXProperty.bind c.translateXProperty
+                set_on_mouse_clicked c.get_on_mouse_clicked
+                get_style_class.add "text"	
+              end
 
-	end
+              if last != nil
+                last.translateXProperty.add_change_listener do | obr, oval, nval |
+                  c.setTranslateX nval if(nval > c.getTranslateX)
+                end
+                final_last = last
+                c.translateXProperty.add_change_listener do | obr, oval, nval |
+                  final_last.setTranslateX nval if(nval < final_last.getTranslateX)
+                end
+              end
+              last = c
 
-	def create_text(circle,column)
-
-		t = text( circle.getCenterX-3 , circle.getCenterY+4,((@@COL_COUNT - column) % @@COL_COUNT).to_s) do
-
-			translateXProperty.bind(circle.translateXProperty)
-
-			set_on_mouse_clicked circle.get_on_mouse_clicked
-
-			get_style_class.add "text"
-
-		end
-
-	end
-
-	def create_circle(row,column)
-
-		c = circle(radius:@@RADIUS-1, centerX:column, centerY:row) do
-
-			set_on_mouse_clicked do |event|
-
-				translate_x = translateXProperty
-
-				timeline(cycle_count: 1, auto_reverse: false) do
-
-					animate translate_x, 0.sec => 250.ms, c.translateX == @@TRANS_DIST ? @@TRANS_DIST : 0 => c.translateX == 0 ? @@TRANS_DIST : 0				
-
-				end.play
-
-			end
-
-		end		
-
-	end
-
-	def start(stage)
-
-		with(stage,title:"JRubyFX Abacus Experiment 6", width:@@PADDED_WIDTH + @@TRANS_DIST + @@RADIUS, height:@@PADDED_HEIGHT + @@OFFSET) do
-
-			p = Pane.new
-
-			@@ROW_COUNT.times do |x|
-
-				p.add(AbacusExp6.new.create_rect(@@OFFSET + (x * @@DIAMETER)-(@@RECT_HEIGHT/2),@@PADDING))
-
-				last = nil
-
-				@@COL_COUNT.times do |y|
-
-					c = AbacusExp6.new.create_circle(@@OFFSET + (x * @@DIAMETER),@@OFFSET + (y * @@DIAMETER))
-
-					c.get_style_class.add y < @@COL_COUNT / 2 ? "left" : "right"
-
-					p.add(c)
-
-					p.add(AbacusExp6.new.create_text(c,y))
-
-					if(last != nil)
-
-						last.translateXProperty.add_change_listener do | obr, oval, nval |
-
-							c.setTranslateX nval if(nval > c.getTranslateX)
-
-						end
-
-						final_last = last
-
-						c.translateXProperty.add_change_listener do | obr, oval, nval |
-
-							final_last.setTranslateX nval if(nval < final_last.getTranslateX)
-
-						end
-
-					end
-
-					last = c
-
-				end
-
-			end
-
-			sce = Scene.new(p)
-
-			sce.get_stylesheets.add "abacus.css"
-
-			stage.scene = sce
-
-		end
-
-		stage.show()
-
-	end
-
+            end
+          end
+        end
+      end	
+      l.get_stylesheets.add "abacus.css"		
+      show		
+    end	
+  end
 end
 
 AbacusExp6.launch
